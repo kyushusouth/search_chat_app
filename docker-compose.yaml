@@ -1,0 +1,54 @@
+services:
+  backend:
+    build: ./backend
+    container_name: backend-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - OPENSEARCH_HOST=opensearch-node
+    depends_on:
+      - opensearch-node1
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  frontend:
+    build: ./frontend
+    container_name: frontend-service
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: ["npm", "run", "dev"]
+
+  opensearch-node1:
+    build: ./opensearch
+    container_name: opensearch-node1
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch-node1
+      - discovery.seed_hosts=opensearch-node1
+      - discovery.type=single-node
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=sldfijaisoefjAAOSIEOIEFEI345345345@@@1@1
+    volumes:
+      - opensearch-data1:/usr/share/opensearch/data
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+
+  # opensearch-dashboards:
+  #   image: opensearchproject/opensearch-dashboards:3
+  #   container_name: opensearch-dashboards
+  #   ports:
+  #     - "5601:5601"
+  #   expose:
+  #     - "5601"
+  #   environment:
+  #     OPENSEARCH_HOSTS: '["https://opensearch-node1:9200"]'
+  #   depends_on:
+  #     - opensearch-node1
+
+volumes:
+  opensearch-data1:
